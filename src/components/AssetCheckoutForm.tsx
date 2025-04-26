@@ -19,24 +19,27 @@ import {
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from '@/hooks/use-toast';
+import { useAssets, AssetType } from "@/context/AssetContext";
 
 const AssetCheckoutForm = () => {
+  const { assets, submitCheckoutRequest } = useAssets();
+  const { toast } = useToast();
   const [outwardDate, setOutwardDate] = useState<Date>(new Date());
-  const [expectedReturnDate, setExpectedReturnDate] = useState<Date>();
+  const [expectedReturnDate, setExpectedReturnDate] = useState<Date | undefined>();
   const [daysCount, setDaysCount] = useState<number>(0);
+  const [mediaType, setMediaType] = useState<AssetType | "">("");
+  const [assetId, setAssetId] = useState<string>("");
+  const [purpose, setPurpose] = useState<string>("");
 
-  // Mock data - replace with actual data from your backend
-  const mockMediaTypes = [
-    { id: 1, name: 'Laptop' },
-    { id: 2, name: 'Headphone' },
-    { id: 3, name: 'Monitor' },
-  ];
+  // User info - would come from authentication in production
+  const employeeCode = "100";
+  const employeeName = "John Doe";
 
-  const mockAssets = [
-    { id: 1, name: 'SSPL-LT-56' },
-    { id: 2, name: 'SSPL-LT-57' },
-    { id: 3, name: 'SSPL-HP-12' },
-  ];
+  // Filter available assets by type
+  const availableAssets = assets.filter(
+    asset => asset.isAvailable && (mediaType === "" || asset.type === mediaType)
+  );
 
   // Calculate days between dates
   const calculateDays = (returnDate: Date) => {
@@ -46,8 +49,82 @@ const AssetCheckoutForm = () => {
     setDaysCount(daysDiff);
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!mediaType) {
+      toast({
+        title: "Error",
+        description: "Please select a media type",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!assetId) {
+      toast({
+        title: "Error",
+        description: "Please select an asset",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!purpose) {
+      toast({
+        title: "Error",
+        description: "Please enter a purpose for checkout",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!expectedReturnDate) {
+      toast({
+        title: "Error",
+        description: "Please select an expected return date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedAsset = assets.find(asset => asset.id === assetId);
+    if (!selectedAsset) {
+      toast({
+        title: "Error",
+        description: "Selected asset not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Submit the request
+    submitCheckoutRequest({
+      asset: selectedAsset.name,
+      assetType: selectedAsset.type,
+      employeeName,
+      employeeCode,
+      purpose,
+      expectedReturn: `${daysCount} day${daysCount !== 1 ? 's' : ''}`
+    });
+    
+    // Show success message
+    toast({
+      title: "Success",
+      description: "Your checkout request has been submitted successfully.",
+    });
+    
+    // Reset form
+    setMediaType("");
+    setAssetId("");
+    setPurpose("");
+    setExpectedReturnDate(undefined);
+    setDaysCount(0);
+  };
+
   return (
-    <form className="space-y-6 max-w-2xl mx-auto p-6">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-6">
       <div className="grid grid-cols-2 gap-6">
         {/* Outward Date */}
         <div className="space-y-2">
@@ -91,16 +168,14 @@ const AssetCheckoutForm = () => {
         {/* Media Type */}
         <div className="space-y-2">
           <Label>Media Type</Label>
-          <Select>
+          <Select value={mediaType} onValueChange={(value) => setMediaType(value as AssetType)}>
             <SelectTrigger>
               <SelectValue placeholder="Select media type" />
             </SelectTrigger>
             <SelectContent>
-              {mockMediaTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id.toString()}>
-                  {type.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="Laptop">Laptop</SelectItem>
+              <SelectItem value="Headphone">Headphone</SelectItem>
+              <SelectItem value="Monitor">Monitor</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -108,16 +183,21 @@ const AssetCheckoutForm = () => {
         {/* Asset Information */}
         <div className="space-y-2">
           <Label>Asset/Media Information</Label>
-          <Select>
+          <Select value={assetId} onValueChange={setAssetId} disabled={mediaType === ""}>
             <SelectTrigger>
               <SelectValue placeholder="Select asset" />
             </SelectTrigger>
             <SelectContent>
-              {mockAssets.map((asset) => (
-                <SelectItem key={asset.id} value={asset.id.toString()}>
+              {availableAssets.map((asset) => (
+                <SelectItem key={asset.id} value={asset.id}>
                   {asset.name}
                 </SelectItem>
               ))}
+              {availableAssets.length === 0 && (
+                <SelectItem value="none" disabled>
+                  No available assets of this type
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -125,19 +205,24 @@ const AssetCheckoutForm = () => {
         {/* Employee Code */}
         <div className="space-y-2">
           <Label>Employee Code</Label>
-          <Input type="text" value="100" disabled className="bg-gray-50" />
+          <Input type="text" value={employeeCode} disabled className="bg-gray-50" />
         </div>
 
         {/* Employee Name */}
         <div className="space-y-2">
           <Label>Employee Name</Label>
-          <Input type="text" value="John Doe" disabled className="bg-gray-50" />
+          <Input type="text" value={employeeName} disabled className="bg-gray-50" />
         </div>
 
         {/* Purpose */}
         <div className="space-y-2 col-span-2">
           <Label>Purpose</Label>
-          <Input type="text" placeholder="Enter purpose of checkout" />
+          <Input 
+            type="text" 
+            placeholder="Enter purpose of checkout"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+          />
         </div>
 
         {/* Expected Return */}
