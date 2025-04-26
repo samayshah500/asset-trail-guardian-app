@@ -1,7 +1,8 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Shield, ShieldCheck, ShieldX, User } from "lucide-react";
+import { ShieldCheck, ShieldX, User } from "lucide-react";
+import Navigation from "./Navigation";
 
 const AdminDashboard = () => {
   // Mock data - replace with actual data from backend later
@@ -34,6 +35,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navigation />
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
