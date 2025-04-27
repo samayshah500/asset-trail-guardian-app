@@ -189,6 +189,6 @@
   }
 
   .sidebar {
-    @apply bg-sidebar-background text-sidebar-foreground border-r border-sidebar-border;
+    @apply bg-sidebar text-sidebar-foreground border-r border-sidebar-border;
   }
 }
