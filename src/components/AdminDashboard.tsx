@@ -35,53 +35,67 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="main-container">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
       <Navigation />
-      <header className="page-header">
-        <div className="content-container">
-          <h1 className="page-title">Admin Dashboard</h1>
+      <header className="bg-card shadow-sm border-b">
+        <div className="max-w-7xl mx-auto py-6 px-4">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground/90">Admin Dashboard</h1>
+          <p className="mt-2 text-muted-foreground">Manage asset checkout requests and track assets</p>
         </div>
       </header>
-      <main className="content-container">
-        <div className="card-container">
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Asset Checkout Requests</h2>
-            <div className="table-container">
-              <div className="table-wrapper">
+      <main className="max-w-7xl mx-auto py-8 px-4">
+        <div className="rounded-lg border bg-card shadow-sm">
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-card-foreground">Asset Checkout Requests</h2>
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                {checkoutRequests.length} Requests
+              </span>
+            </div>
+            <div className="rounded-lg border">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Asset</TableHead>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Purpose</TableHead>
-                      <TableHead>Expected Return</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold">Date & Time</TableHead>
+                      <TableHead className="font-semibold">Asset Details</TableHead>
+                      <TableHead className="font-semibold">Employee</TableHead>
+                      <TableHead className="font-semibold">Purpose</TableHead>
+                      <TableHead className="font-semibold">Expected Return</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {checkoutRequests.map((request) => (
-                      <TableRow key={request.id}>
-                        <TableCell>{request.date}</TableCell>
-                        <TableCell>{request.time}</TableCell>
+                      <TableRow key={request.id} className="hover:bg-muted/50 transition-colors">
+                        <TableCell>
+                          <div className="font-medium">{request.date}</div>
+                          <div className="text-sm text-muted-foreground">{request.time}</div>
+                        </TableCell>
                         <TableCell>
                           <div className="font-medium">{request.asset}</div>
                           <div className="text-sm text-muted-foreground">{request.assetType}</div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{request.employeeName}</div>
-                          <div className="text-sm text-muted-foreground">{request.employeeCode}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{request.employeeName}</div>
+                              <div className="text-sm text-muted-foreground">{request.employeeCode}</div>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell>{request.purpose}</TableCell>
                         <TableCell>{request.expectedReturn}</TableCell>
                         <TableCell>
-                          <span className={`status-badge ${
-                            request.status === 'pending' ? 'status-pending' : 
-                            request.status === 'approved' ? 'status-approved' : 
-                            request.status === 'rejected' ? 'status-rejected' :
-                            'status-returned'
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            request.status === 'pending' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' : 
+                            request.status === 'approved' ? 'bg-green-50 text-green-800 ring-1 ring-inset ring-green-600/20' : 
+                            request.status === 'rejected' ? 'bg-red-50 text-red-800 ring-1 ring-inset ring-red-600/20' :
+                            'bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-600/20'
                           }`}>
                             {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                           </span>
@@ -110,10 +124,10 @@ const AdminDashboard = () => {
                             )}
                             {request.status === 'approved' && (
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => handleReturn(request.id)}
-                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
                               >
                                 <User className="h-4 w-4 mr-1" />
                                 Return
