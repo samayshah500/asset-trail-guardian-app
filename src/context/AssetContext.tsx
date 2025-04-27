@@ -1,5 +1,6 @@
-
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { assetService } from "@/services/api";
+import { useToast } from "@/components/ui/use-toast";
 
 // Define types
 export type AssetType = "Laptop" | "Headphone" | "Monitor";
@@ -73,82 +74,119 @@ const initialRequests: CheckoutRequest[] = [
 export const AssetProvider = ({ children }: { children: ReactNode }) => {
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
   const [checkoutRequests, setCheckoutRequests] = useState<CheckoutRequest[]>(initialRequests);
+  const { toast } = useToast();
 
-  const submitCheckoutRequest = (request: Omit<CheckoutRequest, "id" | "date" | "time" | "status">) => {
-    const now = new Date();
-    const newRequest: CheckoutRequest = {
-      ...request,
-      id: (checkoutRequests.length + 1).toString(),
-      date: now.toISOString().split('T')[0],
-      time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      status: "pending"
+  // Fetch initial data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [assetsData, requestsData] = await Promise.all([
+          assetService.getAllAssets(),
+          assetService.getAllCheckoutRequests(),
+        ]);
+        setAssets(assetsData);
+        setCheckoutRequests(requestsData);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch data. Please try again later.",
+          variant: "destructive",
+        });
+      }
     };
-    
-    setCheckoutRequests([...checkoutRequests, newRequest]);
-    
-    // Update asset availability
-    setAssets(
-      assets.map(asset => 
-        asset.name === request.asset ? { ...asset, isAvailable: false } : asset
-      )
-    );
-  };
+    fetchData();
+  }, []);
 
-  const approveRequest = (id: string) => {
-    setCheckoutRequests(
-      checkoutRequests.map(request => 
-        request.id === id ? { ...request, status: "approved" } : request
-      )
-    );
-  };
-
-  const rejectRequest = (id: string) => {
-    const request = checkoutRequests.find(req => req.id === id);
-    
-    setCheckoutRequests(
-      checkoutRequests.map(req => 
-        req.id === id ? { ...req, status: "rejected" } : req
-      )
-    );
-    
-    // Make the asset available again if rejected
-    if (request) {
-      setAssets(
-        assets.map(asset => 
-          asset.name === request.asset ? { ...asset, isAvailable: true } : asset
+  const submitCheckoutRequest = async (request: Omit<CheckoutRequest, "id" | "date" | "time" | "status">) => {
+    try {
+      const newRequest = await assetService.submitCheckoutRequest(request);
+      setCheckoutRequests(prev => [...prev, newRequest]);
+      setAssets(prev =>
+        prev.map(asset =>
+          asset.name === request.asset ? { ...asset, isAvailable: false } : asset
         )
       );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit checkout request. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const returnAsset = (id: string) => {
-    const request = checkoutRequests.find(req => req.id === id);
-    
-    setCheckoutRequests(
-      checkoutRequests.map(req => 
-        req.id === id ? { ...req, status: "returned" } : req
-      )
-    );
-    
-    // Make the asset available again when returned
-    if (request) {
-      setAssets(
-        assets.map(asset => 
-          asset.name === request.asset ? { ...asset, isAvailable: true } : asset
-        )
+  const approveRequest = async (id: string) => {
+    try {
+      const updatedRequest = await assetService.updateRequestStatus(id, "approved");
+      setCheckoutRequests(prev =>
+        prev.map(req => (req.id === id ? updatedRequest : req))
       );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to approve request. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const rejectRequest = async (id: string) => {
+    try {
+      const updatedRequest = await assetService.updateRequestStatus(id, "rejected");
+      setCheckoutRequests(prev =>
+        prev.map(req => (req.id === id ? updatedRequest : req))
+      );
+      
+      const request = checkoutRequests.find(req => req.id === id);
+      if (request) {
+        setAssets(prev =>
+          prev.map(asset =>
+            asset.name === request.asset ? { ...asset, isAvailable: true } : asset
+          )
+        );
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reject request. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const returnAsset = async (id: string) => {
+    try {
+      const updatedRequest = await assetService.updateRequestStatus(id, "returned");
+      setCheckoutRequests(prev =>
+        prev.map(req => (req.id === id ? updatedRequest : req))
+      );
+      
+      const request = checkoutRequests.find(req => req.id === id);
+      if (request) {
+        setAssets(prev =>
+          prev.map(asset =>
+            asset.name === request.asset ? { ...asset, isAvailable: true } : asset
+          )
+        );
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to return asset. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <AssetContext.Provider 
-      value={{ 
-        assets, 
-        checkoutRequests, 
-        submitCheckoutRequest, 
-        approveRequest, 
-        rejectRequest, 
-        returnAsset 
+    <AssetContext.Provider
+      value={{
+        assets,
+        checkoutRequests,
+        submitCheckoutRequest,
+        approveRequest,
+        rejectRequest,
+        returnAsset,
       }}
     >
       {children}
