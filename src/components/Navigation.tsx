@@ -1,18 +1,28 @@
 
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Navigation = () => {
+  const location = useLocation();
+
   return (
-    <div className="bg-slate-800 text-white py-2 px-4">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <div className="font-bold">Asset Trail Guardian</div>
-        <div className="space-x-4">
-          <Button variant="ghost" asChild>
-            <Link to="/" className="text-white hover:text-slate-300">User Dashboard</Link>
+    <div className="nav-container">
+      <div className="nav-content">
+        <div className="nav-brand">Asset Trail Guardian</div>
+        <div className="nav-links">
+          <Button
+            variant={location.pathname === "/" ? "secondary" : "ghost"}
+            asChild
+            className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/20"
+          >
+            <Link to="/">User Dashboard</Link>
           </Button>
-          <Button variant="ghost" asChild>
-            <Link to="/admin" className="text-white hover:text-slate-300">Admin Dashboard</Link>
+          <Button
+            variant={location.pathname === "/admin" ? "secondary" : "ghost"}
+            asChild
+            className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/20"
+          >
+            <Link to="/admin">Admin Dashboard</Link>
           </Button>
         </div>
       </div>

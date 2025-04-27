@@ -7,38 +7,36 @@ import { useAssets } from "@/context/AssetContext";
 
 const UserDashboard = () => {
   const { checkoutRequests } = useAssets();
-  
-  // Get only current user's requests (in production, filter by actual user ID)
   const userCode = "100";
   const userRequests = checkoutRequests.filter(req => req.employeeCode === userCode);
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="main-container">
       <Navigation />
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Asset Checkout System</h1>
+      <header className="page-header">
+        <div className="content-container">
+          <h1 className="page-title">Asset Checkout System</h1>
         </div>
       </header>
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <Tabs defaultValue="new-request" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="new-request">New Request</TabsTrigger>
-              <TabsTrigger value="my-requests">My Requests</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="new-request" className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-semibold mb-4">New Asset Checkout Request</h2>
-                <AssetCheckoutForm />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="my-requests" className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-semibold mb-4">My Checkout Requests</h2>
-                <div className="overflow-x-auto">
+      <main className="content-container">
+        <Tabs defaultValue="new-request" className="space-y-8">
+          <TabsList className="w-full max-w-md mx-auto grid grid-cols-2">
+            <TabsTrigger value="new-request">New Request</TabsTrigger>
+            <TabsTrigger value="my-requests">My Requests</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="new-request" className="card-container">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">New Asset Checkout Request</h2>
+              <AssetCheckoutForm />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="my-requests" className="card-container">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">My Checkout Requests</h2>
+              <div className="table-container">
+                <div className="table-wrapper">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -55,18 +53,18 @@ const UserDashboard = () => {
                           <TableRow key={request.id}>
                             <TableCell>{request.date}</TableCell>
                             <TableCell>
-                              {request.asset}
-                              <br />
-                              <span className="text-sm text-gray-500">{request.assetType}</span>
+                              <div className="font-medium">{request.asset}</div>
+                              <div className="text-sm text-muted-foreground">{request.assetType}</div>
                             </TableCell>
                             <TableCell>{request.purpose}</TableCell>
                             <TableCell>{request.expectedReturn}</TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
-                                ${request.status === 'pending' ? 'bg-yellow-50 text-yellow-800' : 
-                                  request.status === 'approved' ? 'bg-green-50 text-green-800' : 
-                                  request.status === 'rejected' ? 'bg-red-50 text-red-800' :
-                                  'bg-blue-50 text-blue-800'}`}>
+                              <span className={`status-badge ${
+                                request.status === 'pending' ? 'status-pending' : 
+                                request.status === 'approved' ? 'status-approved' : 
+                                request.status === 'rejected' ? 'status-rejected' :
+                                'status-returned'
+                              }`}>
                                 {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                               </span>
                             </TableCell>
@@ -74,7 +72,7 @@ const UserDashboard = () => {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-4">
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                             You have no checkout requests.
                           </TableCell>
                         </TableRow>
@@ -83,9 +81,9 @@ const UserDashboard = () => {
                   </Table>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

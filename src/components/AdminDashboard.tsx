@@ -35,19 +35,19 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="main-container">
       <Navigation />
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+      <header className="page-header">
+        <div className="content-container">
+          <h1 className="page-title">Admin Dashboard</h1>
         </div>
       </header>
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-lg font-semibold mb-4">Asset Checkout Requests</h2>
-              <div className="overflow-x-auto">
+      <main className="content-container">
+        <div className="card-container">
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Asset Checkout Requests</h2>
+            <div className="table-container">
+              <div className="table-wrapper">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -67,23 +67,22 @@ const AdminDashboard = () => {
                         <TableCell>{request.date}</TableCell>
                         <TableCell>{request.time}</TableCell>
                         <TableCell>
-                          {request.asset}
-                          <br />
-                          <span className="text-sm text-gray-500">{request.assetType}</span>
+                          <div className="font-medium">{request.asset}</div>
+                          <div className="text-sm text-muted-foreground">{request.assetType}</div>
                         </TableCell>
                         <TableCell>
-                          {request.employeeName}
-                          <br />
-                          <span className="text-sm text-gray-500">{request.employeeCode}</span>
+                          <div className="font-medium">{request.employeeName}</div>
+                          <div className="text-sm text-muted-foreground">{request.employeeCode}</div>
                         </TableCell>
                         <TableCell>{request.purpose}</TableCell>
                         <TableCell>{request.expectedReturn}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
-                            ${request.status === 'pending' ? 'bg-yellow-50 text-yellow-800' : 
-                              request.status === 'approved' ? 'bg-green-50 text-green-800' : 
-                              request.status === 'rejected' ? 'bg-red-50 text-red-800' :
-                              'bg-blue-50 text-blue-800'}`}>
+                          <span className={`status-badge ${
+                            request.status === 'pending' ? 'status-pending' : 
+                            request.status === 'approved' ? 'status-approved' : 
+                            request.status === 'rejected' ? 'status-rejected' :
+                            'status-returned'
+                          }`}>
                             {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                           </span>
                         </TableCell>
@@ -92,18 +91,18 @@ const AdminDashboard = () => {
                             {request.status === 'pending' && (
                               <>
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-green-600 hover:text-green-700"
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => handleApprove(request.id)}
+                                  className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                                 >
                                   <ShieldCheck className="h-4 w-4" />
                                 </Button>
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 hover:text-red-700"
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => handleReject(request.id)}
+                                  className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <ShieldX className="h-4 w-4" />
                                 </Button>
@@ -111,12 +110,13 @@ const AdminDashboard = () => {
                             )}
                             {request.status === 'approved' && (
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleReturn(request.id)}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                               >
                                 <User className="h-4 w-4 mr-1" />
-                                <span>Return</span>
+                                Return
                               </Button>
                             )}
                           </div>
